@@ -1,0 +1,13 @@
+services:
+  db:
+    image: postgres:16
+    container_name: tenant-service_company_bd
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: tenant-service_db
+    volumes:
+      - ./.postgres:/var/lib/postgresql/data
+
