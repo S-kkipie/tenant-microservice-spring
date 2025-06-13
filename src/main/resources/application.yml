@@ -5,7 +5,18 @@ eureka:
   client:
     service-url:
       defaultZone : http://localhost:8761/eureka/
-      
+
+tenant:
+  base-port: 5500
+
+app:
+  base-url: jdbc:postgresql://localhost
+  aes:
+    secure-key: 12345678901234567890123456789012
+  rabbitmq:
+    exchange: tenant.identity.exchange
+    routing-key: tenant.database.created
+
 spring:
   application:
     name: TENANT-SERVICE

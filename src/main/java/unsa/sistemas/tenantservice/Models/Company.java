@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "companies")
 public class Company {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -24,14 +25,17 @@ public class Company {
     private Modality modality;
     private String ownerId;
 
+    private Integer dataBasePort;
+    private String containerName;
+    private String dataBasePassword;
+
+
     @ManyToOne
     @JoinColumn(name = "type_id")
     private Type type;
 
     @Column(unique = true, nullable = false)
     private String code;
-
-
 
     private Boolean enabled;
 
