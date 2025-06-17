@@ -10,7 +10,7 @@ import java.io.Serializable;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateTypeRequest implements Serializable {
+public class TypeRequest implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
