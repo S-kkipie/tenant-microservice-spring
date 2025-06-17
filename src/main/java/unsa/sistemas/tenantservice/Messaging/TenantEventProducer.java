@@ -9,21 +9,18 @@ import unsa.sistemas.tenantservice.DTOs.CreateDataBaseEvent;
 @Slf4j
 @Service
 public class TenantEventProducer {
-
     private final RabbitTemplate rabbitTemplate;
 
     @Value("${app.rabbitmq.exchange}")
     private String exchange;
 
-    @Value("${app.rabbitmq.routing-key}")
-    private String routingKey;
 
     public TenantEventProducer(RabbitTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;
     }
 
     public void sendDatabaseCreatedEvent(CreateDataBaseEvent event) {
-        rabbitTemplate.convertAndSend(exchange, routingKey, event);
+        rabbitTemplate.convertAndSend(exchange, "", event);
         log.debug("Sending event DATABASE_CREATED for tenantId {}", event);
     }
 }

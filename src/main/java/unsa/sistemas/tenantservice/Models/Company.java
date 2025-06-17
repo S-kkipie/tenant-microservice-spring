@@ -23,7 +23,7 @@ public class Company {
     private String name;
     private String description;
     private Modality modality;
-    private String ownerId;
+    private String username;
 
     private Integer dataBasePort;
     private String containerName;

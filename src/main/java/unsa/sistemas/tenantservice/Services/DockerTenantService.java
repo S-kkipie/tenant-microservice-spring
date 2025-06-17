@@ -2,7 +2,6 @@ package unsa.sistemas.tenantservice.Services;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import unsa.sistemas.tenantservice.Config.TenantProperties;
 import unsa.sistemas.tenantservice.Models.Company;
@@ -22,7 +21,6 @@ import java.util.regex.Pattern;
 @AllArgsConstructor
 public class DockerTenantService {
     private final CompanyRepository companyRepository;
-    private final PasswordEncoder passwordEncoder;
     private final TenantProperties tenantProperties;
 
     public Company createContainer(Company company, String securePassword) {
@@ -51,14 +49,14 @@ public class DockerTenantService {
                 "docker", "run", "-d",
                 "--name", containerName,
                 "-p", port + ":5432",
-                "-e", "POSTGRES_USER=" + company.getOwnerId(),
+                "-e", "POSTGRES_USER=" + company.getUsername(),
                 "-e", "POSTGRES_PASSWORD=" + password,
                 "-e", "POSTGRES_DB=" + dbName,
                 "-v", "tenant-" + company.getCode() + ":/var/lib/postgresql/data",
                 "postgres:16"
         );
 
-        company.setDataBasePassword(passwordEncoder.encode(password));
+        company.setDataBasePassword(password);
 
         Process process = processBuilder.start();
 
@@ -78,8 +76,8 @@ public class DockerTenantService {
 
         if (exitCode == 0) {
             log.info("PostgresSQL container created: {} in port {} with database default: {}", containerName, port, dbName);
-            waitContainerBeAlready(containerName, company.getOwnerId());
-            createExtraDatabases(company.getCode(), containerName, company.getOwnerId());
+            waitContainerBeAlready(containerName, company.getUsername());
+            createExtraDatabases(company.getCode(), containerName, company.getUsername());
             return saveContainerInfo(company, containerName, port, dbName);
         } else {
             log.error("An error occurred trying to create the container {}, output code: {}", containerName, exitCode);
