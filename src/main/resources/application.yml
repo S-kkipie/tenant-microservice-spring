@@ -15,7 +15,6 @@ app:
     secure-key: 12345678901234567890123456789012
   rabbitmq:
     exchange: tenant.identity.exchange
-    routing-key: tenant.database.created
 
 spring:
   application:
@@ -40,3 +39,7 @@ logging:
     org.springframework: INFO
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql: TRACE
+    unsa:
+      sistemas:
+        tenantservice: DEBUG
+
