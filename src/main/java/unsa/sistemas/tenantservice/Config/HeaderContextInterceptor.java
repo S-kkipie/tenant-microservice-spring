@@ -6,7 +6,6 @@ import lombok.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import unsa.sistemas.tenantservice.Models.Role;
-
 import java.io.IOException;
 
 @Component
