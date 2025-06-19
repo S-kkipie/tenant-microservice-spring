@@ -15,9 +15,8 @@ public class HeaderContextInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) throws IOException {
         String username = request.getHeader("X-User-Name");
         String role = request.getHeader("X-User-Role");
-        Role roleEnum = Role.valueOf(role);
 
-        if (username == null || role == null || roleEnum == Role.ROLE_ADMIN || roleEnum == Role.ROLE_USER) {
+        if (username == null || role == null || Role.valueOf(role) == Role.ROLE_ADMIN || Role.valueOf(role)  == Role.ROLE_USER) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             response.getWriter().write("Forbidden: Missing authentication headers");
             response.getWriter().flush();
