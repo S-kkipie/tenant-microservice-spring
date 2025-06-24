@@ -50,9 +50,9 @@ public class TypeController {
     public ResponseEntity<ResponseWrapper<Object>> deleteType(@PathVariable Long id) {
         try {
             UserContext context = UserContextHolder.get();
-            Role role = Role.valueOf(context.getRole());
+            Role role = context.getRole();
 
-            if (role != Role.ROLE_SUPERADMIN) {
+            if (role != Role.ROLE_PRINCIPAL_ADMIN) {
                 return ResponseHandler.generateResponse("Unauthorized access", HttpStatus.FORBIDDEN, null);
             }
 

@@ -79,13 +79,36 @@ public class CompanyService {
         return createdCompany;
     }
 
+    public void deployAllCompanies() {
+        java.util.List<Company> companies = companyRepository.findAll();
+        for (Company company : companies) {
+
+            Map<String, String> payload = Map.of(
+                    "url", URLUtil.generateUrl(URL_BASE, company.getDataBasePort()),
+                    "username", company.getUsername(),
+                    "password", company.getDataBasePassword(),
+                    "orgCode", company.getCode(),
+                    "physicalExists", "true"
+            );
+
+            try {
+                String json = new ObjectMapper().writeValueAsString(payload);
+                String encrypted = encryptionUtil.encrypt(json);
+                tenantEventProducer.sendDatabaseCreatedEvent(new CreateDataBaseEvent(encrypted));
+            } catch (Exception e) {
+                throw new RuntimeException("Error while sending database created event for company: " + company.getCode(), e);
+            }
+        }
+    }
+
+
     public Company findCompanyByCode(String code) {
         UserContext context = UserContextHolder.get();
-        Role role = Role.valueOf(context.getRole());
+        Role role = context.getRole();
 
         Company company = companyRepository.findCompanyByCode(code).orElseThrow(() -> new IllegalArgumentException("Company not found"));
 
-        if (!(role == Role.ROLE_SUPERADMIN || Objects.equals(context.getUsername(), company.getUsername()))) {
+        if (!(role == Role.ROLE_PRINCIPAL_ADMIN || Objects.equals(context.getUsername(), company.getUsername()))) {
             throw new IllegalArgumentException("You don't have access to this company");
         }
         return company;
@@ -97,12 +120,12 @@ public class CompanyService {
 
     public Company updateCompany(String code, CompanyRequest updatedCompany) {
         UserContext context = UserContextHolder.get();
-        Role role = Role.valueOf(context.getRole());
+        Role role = context.getRole();
 
         Company existingCompany = companyRepository.findCompanyByCode(code)
                 .orElseThrow(() -> new IllegalArgumentException("Company not found"));
 
-        if (!(role == Role.ROLE_SUPERADMIN || Objects.equals(context.getUsername(), existingCompany.getUsername()))) {
+        if (!(role == Role.ROLE_PRINCIPAL_ADMIN || Objects.equals(context.getUsername(), existingCompany.getUsername()))) {
             throw new IllegalArgumentException("You don't have access to this company");
         }
 
@@ -120,13 +143,12 @@ public class CompanyService {
 
     public void deleteCompany(String code) {
         UserContext context = UserContextHolder.get();
-        Role role = Role.valueOf(context.getRole());
-
+        Role role = context.getRole();
 
         Company company = companyRepository.findCompanyByCode(code)
                 .orElseThrow(() -> new IllegalArgumentException("Company not found"));
 
-        if (!(role == Role.ROLE_SUPERADMIN || Objects.equals(context.getUsername(), company.getUsername()))) {
+        if (!(role == Role.ROLE_PRINCIPAL_ADMIN || Objects.equals(context.getUsername(), company.getUsername()))) {
             throw new IllegalArgumentException("You don't have access to this company");
         }
 

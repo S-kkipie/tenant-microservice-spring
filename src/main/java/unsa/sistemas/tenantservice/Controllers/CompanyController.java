@@ -26,14 +26,29 @@ public class CompanyController {
     @GetMapping
     public ResponseEntity<ResponseWrapper<List<Company>>> getAllCompanies() {
         UserContext context = UserContextHolder.get();
-        Role role = Role.valueOf(context.getRole());
+        Role role = context.getRole();
 
-        if (role != Role.ROLE_SUPERADMIN) {
+        if (role != Role.ROLE_PRINCIPAL_ADMIN) {
             return ResponseHandler.generateResponse("Unauthorized access", HttpStatus.FORBIDDEN, null);
         }
 
         return ResponseHandler.generateResponse("All companies found", HttpStatus.OK, companyService.getAllCompanies());
     }
+
+    @GetMapping("/deploy")
+    public ResponseEntity<ResponseWrapper<Object>> deployAllCompanies() {
+        try {
+            UserContext context = UserContextHolder.get();
+            if (context.getRole() != Role.ROLE_PRINCIPAL_ADMIN) {
+                return ResponseHandler.generateResponse("Unauthorized access", HttpStatus.FORBIDDEN, null);
+            }
+            companyService.deployAllCompanies();
+            return ResponseHandler.generateResponse("All companies deployed successfully", HttpStatus.OK, null);
+        } catch (Exception e) {
+            return ResponseHandler.generateResponse("Failed to deploy companies", HttpStatus.INTERNAL_SERVER_ERROR, null);
+        }
+    }
+
 
     @GetMapping("/{code}")
     public ResponseEntity<ResponseWrapper<Company>> getCompany(@PathVariable String code) {
@@ -50,6 +65,9 @@ public class CompanyController {
     public ResponseEntity<ResponseWrapper<Object>> createCompany(@Valid @RequestBody CompanyRequest request) {
         try {
             UserContext context = UserContextHolder.get();
+            if (context.getRole() != Role.ROLE_PRINCIPAL_USER && context.getRole() != Role.ROLE_PRINCIPAL_ADMIN) {
+                return ResponseHandler.generateResponse("Unauthorized access", HttpStatus.FORBIDDEN, null);
+            }
             return ResponseHandler.generateResponse("Company created successfully", HttpStatus.CREATED, companyService.createCompany(request, context.getUsername()));
         } catch (DuplicateKeyException e) {
             return ResponseHandler.generateResponse("Failed to create a company", HttpStatus.BAD_REQUEST, "Code is already used");

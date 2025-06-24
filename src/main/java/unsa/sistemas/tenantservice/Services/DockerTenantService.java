@@ -44,6 +44,8 @@ public class DockerTenantService {
             throw new RuntimeException("Container " + containerName + " already exists");
         }
 
+        log.info("Creating PostgresSQL container for org: {}, port: {}, dbName: {}, username: {}", company.getCode(), port, dbName, company.getUsername());
+
         ProcessBuilder processBuilder = new ProcessBuilder();
         processBuilder.command(
                 "docker", "run", "-d",
@@ -255,6 +257,9 @@ public class DockerTenantService {
 
             ProcessBuilder stopPb = new ProcessBuilder("docker", "stop", containerName);
             stopPb.start().waitFor();
+
+            ProcessBuilder volumermPb = new ProcessBuilder("docker", "volume" , "rm", containerName);
+            volumermPb.start().waitFor();
 
             ProcessBuilder rmPb = new ProcessBuilder("docker", "rm", containerName);
             Process process = rmPb.start();
