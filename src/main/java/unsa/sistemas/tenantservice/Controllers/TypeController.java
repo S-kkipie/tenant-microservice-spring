@@ -1,6 +1,7 @@
 package unsa.sistemas.tenantservice.Controllers;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +14,6 @@ import unsa.sistemas.tenantservice.Services.TypeService;
 import unsa.sistemas.tenantservice.Utils.ResponseHandler;
 import unsa.sistemas.tenantservice.Utils.ResponseWrapper;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/type")
@@ -32,8 +32,8 @@ public class TypeController {
     }
 
     @GetMapping
-    public ResponseEntity<ResponseWrapper<List<Type>>> getAllTypes() {
-        return ResponseHandler.generateResponse("All types found", HttpStatus.OK, typeService.getAllTypes());
+    public ResponseEntity<ResponseWrapper<Page<Type>>> getAllTypes(@RequestParam(defaultValue = "0") int page) {
+        return ResponseHandler.generateResponse("All types found", HttpStatus.OK, typeService.getAllTypes(page));
     }
 
     @GetMapping("/{id}")

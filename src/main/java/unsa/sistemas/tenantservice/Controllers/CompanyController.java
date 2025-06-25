@@ -3,6 +3,7 @@ package unsa.sistemas.tenantservice.Controllers;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,6 @@ import unsa.sistemas.tenantservice.Utils.ResponseHandler;
 import unsa.sistemas.tenantservice.Utils.ResponseWrapper;
 import unsa.sistemas.tenantservice.DTOs.CompanyRequest;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/company")
@@ -24,7 +24,7 @@ public class CompanyController {
     private final CompanyService companyService;
 
     @GetMapping
-    public ResponseEntity<ResponseWrapper<List<Company>>> getAllCompanies() {
+    public ResponseEntity<ResponseWrapper<Page<Company>>> getAllCompanies(@RequestParam(defaultValue = "0") int page) {
         UserContext context = UserContextHolder.get();
         Role role = context.getRole();
 
@@ -32,7 +32,7 @@ public class CompanyController {
             return ResponseHandler.generateResponse("Unauthorized access", HttpStatus.FORBIDDEN, null);
         }
 
-        return ResponseHandler.generateResponse("All companies found", HttpStatus.OK, companyService.getAllCompanies());
+        return ResponseHandler.generateResponse("All companies found", HttpStatus.OK, companyService.getAllCompanies(page));
     }
 
     @GetMapping("/deploy")

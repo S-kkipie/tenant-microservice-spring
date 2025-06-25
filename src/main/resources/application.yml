@@ -10,6 +10,8 @@ tenant:
   base-port: 5500
 
 app:
+  properties:
+    page-size: 10
   base-url: jdbc:postgresql://localhost
   aes:
     secure-key: 12345678901234567890123456789012

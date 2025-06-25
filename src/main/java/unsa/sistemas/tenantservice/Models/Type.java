@@ -21,7 +21,7 @@ public class Type {
 
     @Column(nullable = false, unique = true)
     private String name;
-
+    private int usageCount;
     private Boolean enabled;
 
     private LocalDateTime createdAt;

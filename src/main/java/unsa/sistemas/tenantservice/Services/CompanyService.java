@@ -4,7 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import unsa.sistemas.tenantservice.Config.AppProperties;
 import unsa.sistemas.tenantservice.Config.UserContext;
 import unsa.sistemas.tenantservice.Config.UserContextHolder;
 import unsa.sistemas.tenantservice.DTOs.CompanyRequest;
@@ -31,6 +35,7 @@ public class CompanyService {
     private final DockerTenantService dockerTenantService;
     private final TenantEventProducer tenantEventProducer;
     private final EncryptionUtil encryptionUtil;
+    private final AppProperties properties;
 
     @Value("${app.base-url}")
     String URL_BASE;
@@ -44,6 +49,8 @@ public class CompanyService {
         }
 
         Type type = typeRepository.findById(request.getTypeId()).orElseThrow(() -> new IllegalArgumentException("Type not found"));
+        type.setUsageCount(type.getUsageCount() + 1);
+        typeRepository.save(type);
 
         String password = RandomPasswordGenerator.generateRandomPassword(20);
 
@@ -114,8 +121,9 @@ public class CompanyService {
         return company;
     }
 
-    public java.util.List<Company> getAllCompanies() {
-        return companyRepository.findAll();
+    public Page<Company> getAllCompanies(int page) {
+        Pageable pageable = PageRequest.of(page, properties.getPageSize());
+        return companyRepository.findAll(pageable);
     }
 
     public Company updateCompany(String code, CompanyRequest updatedCompany) {
