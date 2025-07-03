@@ -2,6 +2,7 @@ package unsa.sistemas.tenantservice.Controllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -17,14 +18,16 @@ import unsa.sistemas.tenantservice.Utils.ResponseWrapper;
 import unsa.sistemas.tenantservice.DTOs.CompanyRequest;
 
 
+@Slf4j
 @RestController
 @RequestMapping("/company")
 @RequiredArgsConstructor
 public class CompanyController {
     private final CompanyService companyService;
 
+
     @GetMapping
-    public ResponseEntity<ResponseWrapper<Page<Company>>> getAllCompanies(@RequestParam(defaultValue = "0") int page) {
+    public ResponseEntity<ResponseWrapper<Page<Company>>> getAllCompanies(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size, @RequestParam(defaultValue = "") String search) {
         UserContext context = UserContextHolder.get();
         Role role = context.getRole();
 
@@ -32,7 +35,7 @@ public class CompanyController {
             return ResponseHandler.generateResponse("Unauthorized access", HttpStatus.FORBIDDEN, null);
         }
 
-        return ResponseHandler.generateResponse("All companies found", HttpStatus.OK, companyService.getAllCompanies(page));
+        return ResponseHandler.generateResponse("All companies found", HttpStatus.OK, companyService.find(page, size, search));
     }
 
     @GetMapping("/deploy")
@@ -72,6 +75,7 @@ public class CompanyController {
         } catch (DuplicateKeyException e) {
             return ResponseHandler.generateResponse("Failed to create a company", HttpStatus.BAD_REQUEST, "Code is already used");
         } catch (Exception e) {
+            log.error("Error while creating a company : {}", e.getMessage());
             return ResponseHandler.generateResponse("Failed to create a company", HttpStatus.BAD_REQUEST, "An error occurred while creating a company");
         }
     }

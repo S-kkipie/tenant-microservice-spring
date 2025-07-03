@@ -2,13 +2,13 @@ package unsa.sistemas.tenantservice.Services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import unsa.sistemas.tenantservice.Config.AppProperties;
 import unsa.sistemas.tenantservice.Config.UserContext;
 import unsa.sistemas.tenantservice.Config.UserContextHolder;
 import unsa.sistemas.tenantservice.DTOs.CompanyRequest;
@@ -27,6 +27,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Objects;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CompanyService {
@@ -35,13 +36,13 @@ public class CompanyService {
     private final DockerTenantService dockerTenantService;
     private final TenantEventProducer tenantEventProducer;
     private final EncryptionUtil encryptionUtil;
-    private final AppProperties properties;
 
     @Value("${app.base-url}")
     String URL_BASE;
 
     //TODO check if postgres manage collisions with code
     public Company createCompany(CompanyRequest request, String username) throws Exception {
+        log.info("Creating company {}", request.getCode());
         Company existingCompany = companyRepository.findCompanyByCode(request.getCode()).orElse(null);
 
         if (existingCompany != null) {
@@ -89,7 +90,7 @@ public class CompanyService {
     public void deployAllCompanies() {
         java.util.List<Company> companies = companyRepository.findAll();
         for (Company company : companies) {
-
+            log.info("Deploying company {}", company.getCode());
             Map<String, String> payload = Map.of(
                     "url", URLUtil.generateUrl(URL_BASE, company.getDataBasePort()),
                     "username", company.getUsername(),
@@ -121,9 +122,9 @@ public class CompanyService {
         return company;
     }
 
-    public Page<Company> getAllCompanies(int page) {
-        Pageable pageable = PageRequest.of(page, properties.getPageSize());
-        return companyRepository.findAll(pageable);
+    public Page<Company> find(int page, int size, String text) {
+        Pageable pageable = PageRequest.of(page, size);
+        return companyRepository.findByCodeContainingIgnoreCaseOrNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(text, text, text, pageable);
     }
 
     public Company updateCompany(String code, CompanyRequest updatedCompany) {
@@ -136,7 +137,6 @@ public class CompanyService {
         if (!(role == Role.ROLE_PRINCIPAL_ADMIN || Objects.equals(context.getUsername(), existingCompany.getUsername()))) {
             throw new IllegalArgumentException("You don't have access to this company");
         }
-
 
 
         Type type = typeRepository.findById(updatedCompany.getTypeId()).orElseThrow(() -> new IllegalArgumentException("Type not found"));
@@ -162,6 +162,7 @@ public class CompanyService {
 
         dockerTenantService.stopOrganizationContainer(code);
         dockerTenantService.deleteOrganizationContainer(code);
+        dockerTenantService.deleteVolumeOrganizationContainer(code);
         companyRepository.delete(company);
     }
 

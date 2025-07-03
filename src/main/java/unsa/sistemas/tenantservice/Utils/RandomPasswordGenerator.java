@@ -1,14 +1,15 @@
 package unsa.sistemas.tenantservice.Utils;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 
 public class RandomPasswordGenerator {
     private static final String UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private static final String LOWER = UPPER.toLowerCase();
     private static final String DIGITS = "0123456789";
-    private static final String SPECIAL_CHARS = "!@#$%^&*()_+[]";
 
-    private static final String ALL_CHARS = UPPER + LOWER + DIGITS + SPECIAL_CHARS;
+    private static final String ALL_CHARS = UPPER + LOWER + DIGITS;
 
     private static final SecureRandom random = new SecureRandom();
 
@@ -18,13 +19,12 @@ public class RandomPasswordGenerator {
         password.append(UPPER.charAt(random.nextInt(UPPER.length())));
         password.append(LOWER.charAt(random.nextInt(LOWER.length())));
         password.append(DIGITS.charAt(random.nextInt(DIGITS.length())));
-        password.append(SPECIAL_CHARS.charAt(random.nextInt(SPECIAL_CHARS.length())));
 
         for (int i = 4; i < length; i++) {
             password.append(ALL_CHARS.charAt(random.nextInt(ALL_CHARS.length())));
         }
 
-        return shuffleString(password.toString());
+        return URLEncoder.encode(shuffleString(password.toString()), StandardCharsets.UTF_8);
     }
 
     private static String shuffleString(String input) {

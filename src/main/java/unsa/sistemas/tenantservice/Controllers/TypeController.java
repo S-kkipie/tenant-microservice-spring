@@ -32,8 +32,8 @@ public class TypeController {
     }
 
     @GetMapping
-    public ResponseEntity<ResponseWrapper<Page<Type>>> getAllTypes(@RequestParam(defaultValue = "0") int page) {
-        return ResponseHandler.generateResponse("All types found", HttpStatus.OK, typeService.getAllTypes(page));
+    public ResponseEntity<ResponseWrapper<Page<Type>>> getAllTypes(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size, @RequestParam(defaultValue = "") String search) {
+        return ResponseHandler.generateResponse("All types found", HttpStatus.OK, typeService.findTypes(page, size, search));
     }
 
     @GetMapping("/{id}")

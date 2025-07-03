@@ -6,7 +6,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import unsa.sistemas.tenantservice.Config.AppProperties;
 import unsa.sistemas.tenantservice.DTOs.TypeRequest;
 import unsa.sistemas.tenantservice.Models.Type;
 import unsa.sistemas.tenantservice.Repositories.TypeRepository;
@@ -17,7 +16,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class TypeService {
     private final TypeRepository typeRepository;
-    private final AppProperties appProperties;
 
     //TODO check if postgres manage collisions with name
     public Type createType(TypeRequest typeRequest) {
@@ -29,9 +27,9 @@ public class TypeService {
                 .build());
     }
 
-    public Page<Type> getAllTypes(int pageNumber) {
-        Pageable page = PageRequest.of(pageNumber, appProperties.getPageSize(), Sort.sort(Type.class).by(Type::getUsageCount).descending());
-        return typeRepository.findAll(page);
+    public Page<Type> findTypes(int pageNumber, int size, String search) {
+        Pageable page = PageRequest.of(pageNumber, size, Sort.sort(Type.class).by(Type::getUsageCount).descending());
+        return typeRepository.findByNameContainingIgnoreCase(search, page);
     }
 
     public Type getTypeById(Long id) {

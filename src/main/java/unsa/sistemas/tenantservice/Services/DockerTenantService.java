@@ -44,7 +44,7 @@ public class DockerTenantService {
             throw new RuntimeException("Container " + containerName + " already exists");
         }
 
-        log.info("Creating PostgresSQL container for org: {}, port: {}, dbName: {}, username: {}", company.getCode(), port, dbName, company.getUsername());
+        log.info("Creating PostgresSQL container for org: {}, port: {}, dbName: {}, username: {}, password: {}", company.getCode(), port, dbName, company.getUsername(), password);
 
         ProcessBuilder processBuilder = new ProcessBuilder();
         processBuilder.command(
@@ -125,7 +125,8 @@ public class DockerTenantService {
 
     private List<String> getExtraDatabasesForOrganization(String orgCode) {
         return List.of(
-                orgCode + "_inventory_db"
+                orgCode + "_inventory_db",
+                orgCode + "_lead_db"
         );
     }
 
@@ -258,10 +259,7 @@ public class DockerTenantService {
             ProcessBuilder stopPb = new ProcessBuilder("docker", "stop", containerName);
             stopPb.start().waitFor();
 
-            ProcessBuilder volumermPb = new ProcessBuilder("docker", "volume" , "rm", containerName);
-            volumermPb.start().waitFor();
-
-            ProcessBuilder rmPb = new ProcessBuilder("docker", "rm", containerName);
+            ProcessBuilder rmPb = new ProcessBuilder("docker", "rm", "-v", containerName);
             Process process = rmPb.start();
             int exitCode = process.waitFor();
 
@@ -272,6 +270,24 @@ public class DockerTenantService {
         } catch (Exception e) {
             log.error("An error occurred trying to delete container for org {}: {}", orgCode, e.getMessage());
         }
+    }
+
+    public void deleteVolumeOrganizationContainer(String orgCode) {
+        try {
+            String containerName = getContainerName(orgCode);
+
+            ProcessBuilder pb = new ProcessBuilder("docker", "volume", "rm", containerName);
+            Process process = pb.start();
+            int exitCode = process.waitFor();
+
+            if (exitCode == 0) {
+                log.info("Container {} volume removed", containerName);
+            }
+
+        } catch (Exception e) {
+            log.error("An error occurred trying to delete the volume container for org {}: {}", orgCode, e.getMessage());
+        }
+
     }
 
 //    public List<ContainerInfo> listarContenedoresActivos() {
